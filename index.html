@@ -110,16 +110,18 @@
 
   /* outlook */
   .outlook h2 { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); font-weight: 600; margin: 0 0 8px; }
-  .strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; }
-  .cell { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 4px 7px; text-align: center; min-width: 0; }
-  .cell .dw { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-  .cell .dt { font-size: 15px; font-weight: 600; margin: 1px 0 6px; font-variant-numeric: tabular-nums; }
-  .dots { display: flex; justify-content: center; gap: 8px; }
-  .dot { width: 17px; height: 17px; border-radius: 50%; display: grid; place-items: center; }
+  .strip { display: grid; grid-template-columns: auto repeat(7, 1fr); gap: 6px 6px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+  .s-day { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .s-day .dw { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .s-day .dt { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .s-lab { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--muted); padding-right: 2px; }
+  .s-lab svg { flex: 0 0 auto; }
+  .dot { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; justify-self: center; }
   .dot svg { display: block; }
   .dot.ok { background: var(--ok-soft); color: var(--ok-glyph); }
   .dot.no { background: var(--no-soft); color: var(--no-glyph); }
-  .cell .sp { font-size: 9.5px; color: var(--gold); margin-top: 5px; min-height: 22px; line-height: 1.15; overflow: hidden; max-height: 22px; }
+  .s-tithi { text-align: center; font-size: 8.5px; color: var(--faint); line-height: 1.15; overflow: hidden; overflow-wrap: anywhere; max-height: 20px; min-width: 0; }
+  .s-tithi.sp { color: var(--gold); font-weight: 600; }
 
   /* footer */
   .foot { margin-top: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; color: var(--faint); font-size: 12.5px; padding-top: 4px; }
@@ -158,7 +160,6 @@
   .sheet .gps { font: inherit; background: var(--ok-field); color: var(--ok-ink); border: none; border-radius: 999px; padding: 6px 13px; cursor: pointer; }
   .horizon { color: var(--no-glyph); }
   .err { display: none; background: var(--no-soft); color: var(--no-field); border-radius: 10px; padding: 10px 14px; }
-  .legend { margin-top: 7px; font-size: 11px; color: var(--faint); text-align: center; }
   @media (pointer: coarse) {
     .foot button { padding: 9px 16px; }
     .banner button { padding: 8px 14px; }
@@ -199,7 +200,7 @@
 
   <main class="verdicts">
     <section class="verdict" id="card-water" data-state="ok" role="status" aria-live="polite">
-      <div class="v-head"><span class="v-title">जलम् · Jala</span><span class="v-sub" id="ws-sub">Watering</span></div>
+      <div class="v-head"><span class="v-title" id="w-title">Jala · Watering</span></div>
       <div class="v-main">
         <svg class="v-glyph" viewBox="0 0 100 100" aria-hidden="true">
           <circle cx="50" cy="50" r="44"></circle>
@@ -212,7 +213,7 @@
     </section>
 
     <section class="verdict" id="card-pluck" data-state="ok" role="status" aria-live="polite">
-      <div class="v-head"><span class="v-title">पत्रम् · Patra</span><span class="v-sub" id="ks-sub">Plucking leaves</span></div>
+      <div class="v-head"><span class="v-title" id="k-title">Patra · Plucking</span></div>
       <div class="v-main">
         <svg class="v-glyph" viewBox="0 0 100 100" aria-hidden="true">
           <circle cx="50" cy="50" r="44"></circle>
@@ -228,7 +229,6 @@
   <section class="outlook">
     <h2 id="outlook-h2">Next seven days</h2>
     <div class="strip" id="strip"></div>
-    <div class="legend" id="strip-legend"></div>
   </section>
 
   <footer class="foot">
@@ -586,6 +586,7 @@ function createPanchang(A) {
   const MASA_EN = ['Caitra','Vaiśākha','Jyeṣṭha','Āṣāḍha','Śrāvaṇa','Bhādrapada','Āśvina','Kārttika','Mārgaśīrṣa','Pauṣa','Māgha','Phālguna'];
   const MASA_DEV = ['चैत्र','वैशाख','ज्येष्ठ','आषाढ','श्रावण','भाद्रपद','आश्विन','कार्त्तिक','मार्गशीर्ष','पौष','माघ','फाल्गुन'];
   const NAK_EN = ['Aśvinī','Bharaṇī','Kṛttikā','Rohiṇī','Mṛgaśīrṣa','Ārdrā','Punarvasu','Puṣya','Āśleṣā','Maghā','Pūrva Phalgunī','Uttara Phalgunī','Hasta','Citrā','Svātī','Viśākhā','Anurādhā','Jyeṣṭhā','Mūla','Pūrvāṣāḍhā','Uttarāṣāḍhā','Śravaṇa','Dhaniṣṭhā','Śatabhiṣā','Pūrva Bhādrapadā','Uttara Bhādrapadā','Revatī'];
+  const NAK_DEV = ['अश्विनी','भरणी','कृत्तिका','रोहिणी','मृगशीर्ष','आर्द्रा','पुनर्वसु','पुष्य','आश्लेषा','मघा','पूर्व फाल्गुनी','उत्तर फाल्गुनी','हस्त','चित्रा','स्वाती','विशाखा','अनुराधा','ज्येष्ठा','मूल','पूर्वाषाढा','उत्तराषाढा','श्रवण','धनिष्ठा','शतभिषा','पूर्व भाद्रपदा','उत्तर भाद्रपदा','रेवती'];
 
   function tithiLabel(n) { // 1..30
     if (n === 15) return { en: 'Pūrṇimā', dev: 'पूर्णिमा', paksha: 'Śukla', pakshaDev: 'शुक्ल' };
@@ -773,7 +774,7 @@ function createPanchang(A) {
       udayaLabel: tithiLabel(day.udaya),
       vara: { en: VARA_EN[day.vara], dev: VARA_DEV[day.vara] },
       masa: masaIdx === null ? null : { en: MASA_EN[masaIdx], dev: MASA_DEV[masaIdx], adhika },
-      nakshatra: { en: NAK_EN[nakIdx] },
+      nakshatra: { en: NAK_EN[nakIdx], dev: NAK_DEV[nakIdx] },
       water: { ok: waterReasons.length === 0, reasons: waterReasons },
       pluck: { ok: pluckReasons.length === 0, reasons: pluckReasons }
     };
@@ -799,12 +800,13 @@ function createPanchang(A) {
         (s.pluckPurnima && has([15])) || (s.pluckAmavasya && has([30])) ||
         (s.pluckSankranti && day.sankranti);
       const special = [];
-      if (day.eka.observed) special.push('Ekādaśī');
-      if (has([12, 27])) special.push('Dvādaśī');
-      if (has([15])) special.push('Pūrṇimā');
-      if (has([30])) special.push('Amāvasyā');
-      if (day.sankranti) special.push('Saṅkrānti');
-      days.push({ rise, vara: day.vara, water: !waterNo, pluck: !pluckNo, special: special.join(' · ') });
+      const specialKeys = [];
+      if (day.eka.observed) { special.push('Ekādaśī'); specialKeys.push('ekadashi'); }
+      if (day.sankranti) { special.push('Saṅkrānti'); specialKeys.push('sankranti'); }
+      if (has([15])) { special.push('Pūrṇimā'); specialKeys.push('purnima'); }
+      if (has([30])) { special.push('Amāvasyā'); specialKeys.push('amavasya'); }
+      if (has([12, 27])) { special.push('Dvādaśī'); specialKeys.push('dvadashi'); }
+      days.push({ rise, vara: day.vara, udaya: day.udaya, water: !waterNo, pluck: !pluckNo, special: special.join(' · '), specialKeys });
       prevU = day.udaya; rise = nextRise; nextRise = riseAfter(s, new Date(rise.getTime() + 60000));
     }
     return days;
@@ -858,7 +860,9 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       share: 'Share', copied: 'Link copied ✓', useLoc: '📍 Use my location', chooseCity: 'Choose city', okBtn: 'Looks right ✓',
       banner: 'Showing pañcāṅga for {p}, guessed from your clock. Set your exact place, since verdicts depend on local sunrise.',
       bannerNoGuess: 'Set your location, since verdicts depend on local sunrise.',
-      yourLoc: 'Your location', till: 'till', legend: 'Dots per day: first jala, second patra',
+      yourLoc: 'Your location', till: 'till',
+      titleWater: 'Jala · Watering', titlePluck: 'Patra · Plucking', btnNiyama: '⚙ Niyama', btnAbout: 'About',
+      sk_ekadashi: 'Ekādaśī', sk_sankranti: 'Saṅkrānti', sk_purnima: 'Pūrṇimā', sk_amavasya: 'Amāvasyā', sk_dvadashi: 'Dvādaśī',
       shareText: 'Tulasī Sevā, should you water or pluck tulasī today? Live śāstra verdict, free: ' },
     hi: { waterYes: 'आज जल चढ़ाएँ', waterNo: 'आज जल न चढ़ाएँ', waterNoNight: 'रात्रि में जल नहीं',
       pluckYes: 'पत्र तोड़ सकते हैं', pluckNo: 'आज पत्र न तोड़ें', pluckNoNight: 'रात्रि में पत्र न तोड़ें',
@@ -869,7 +873,9 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       share: 'साझा करें', copied: 'लिंक कॉपी ✓', useLoc: '📍 मेरा स्थान', chooseCity: 'शहर चुनें', okBtn: 'ठीक है ✓',
       banner: 'आपकी घड़ी से {p} माना गया है। सटीक स्थान चुनें, निर्णय स्थानीय सूर्योदय पर निर्भर हैं।',
       bannerNoGuess: 'अपना स्थान चुनें, निर्णय स्थानीय सूर्योदय पर निर्भर हैं।',
-      yourLoc: 'आपका स्थान', till: 'तक', legend: 'प्रति दिन: पहला बिंदु जल, दूसरा पत्र',
+      yourLoc: 'आपका स्थान', till: 'तक',
+      titleWater: 'जलम् · जल-अर्पण', titlePluck: 'पत्रम् · पत्र-चयन', btnNiyama: '⚙ नियम', btnAbout: 'विवरण',
+      sk_ekadashi: 'एकादशी', sk_sankranti: 'सङ्क्रान्ति', sk_purnima: 'पूर्णिमा', sk_amavasya: 'अमावस्या', sk_dvadashi: 'द्वादशी',
       shareText: 'तुलसी सेवा, आज तुलसी को जल चढ़ाएँ या नहीं? देखें: ' }
   };
   const t = k => (I18N[S.lang] || I18N.en)[k] || I18N.en[k] || k;
@@ -939,13 +945,20 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
     $('suntimes').innerHTML = '<b>udaya</b> ' + fmtT(v.od.rise) + ' · <b>asta</b> ' + fmtT(v.od.sunset);
     $('place').textContent = S.place + ' · ' + fmtD(now);
 
-    // panchang line
+    // panchang line, in the selected language only
     const L = v.live.label;
-    $('p-dev').textContent = v.vara.dev + ' · ' + (v.masa ? (v.masa.adhika ? 'अधिक ' : '') + v.masa.dev + ' ' : '') + L.pakshaDev + ' ' + L.dev;
-    let iast = v.vara.en + ' · ' + (v.masa ? (v.masa.adhika ? 'Adhika ' : '') + v.masa.en + ' ' : '') + L.paksha + ' ' + L.en;
-    if (v.live.ends) iast += ' <b>till ' + (sameDay(v.live.ends, now) ? '' : 'tomorrow ') + fmtT(v.live.ends) + '</b>';
-    iast += ' · ' + v.nakshatra.en;
-    $('p-iast').innerHTML = iast;
+    let main, sub;
+    if (S.lang === 'hi') {
+      main = v.vara.dev + ' · ' + (v.masa ? (v.masa.adhika ? 'अधिक ' : '') + v.masa.dev + ' ' : '') + L.pakshaDev + ' ' + L.dev;
+      sub = v.live.ends ? (sameDay(v.live.ends, now) ? '' : t('tomorrow') + ' ') + fmtT(v.live.ends) + ' ' + t('till') : '';
+      sub += (sub ? ' · ' : '') + v.nakshatra.dev + ' नक्षत्र';
+    } else {
+      main = v.vara.en + ' · ' + (v.masa ? (v.masa.adhika ? 'Adhika ' : '') + v.masa.en + ' ' : '') + L.paksha + ' ' + L.en;
+      sub = v.live.ends ? 'till ' + (sameDay(v.live.ends, now) ? '' : 'tomorrow ') + fmtT(v.live.ends) : '';
+      sub += (sub ? ' · ' : '') + v.nakshatra.en + ' nakṣatra';
+    }
+    $('p-dev').textContent = main;
+    $('p-iast').textContent = sub;
 
     renderCard('water', v.water, {
       okDev: 'जलं देयम्', okEn: t('waterYes'), noDev: 'जलं न देयम्',
@@ -964,8 +977,8 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
     $('horizon').hidden = Date.now() <= P.HORIZON;
     $('tz-note').textContent = 'Sunrise, sunset, vāra and every displayed time follow this place and its timezone (' + S.tz + '). The device clock timezone does not matter.';
     document.documentElement.lang = S.lang === 'hi' ? 'hi' : 'en';
-    $('ws-sub').textContent = t('watering'); $('ks-sub').textContent = t('plucking');
-    $('strip-legend').textContent = t('legend');
+    $('w-title').textContent = t('titleWater'); $('k-title').textContent = t('titlePluck');
+    $('btn-settings').textContent = t('btnNiyama'); $('btn-about').textContent = t('btnAbout');
     $('outlook-h2').textContent = t('next7');
     $('btn-lang').textContent = S.lang === 'hi' ? 'EN' : 'हिंदी';
     $('btn-gps').textContent = t('useLoc');
@@ -988,8 +1001,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
           ? ', ' + (sameDay(r.until, v.now) ? '' : t('tomorrow') + ' ') + fmtT(r.until) + ' ' + t('till')
           : ', till ' + (sameDay(r.until, v.now) ? '' : 'tomorrow ') + fmtT(r.until);
       }
-      const lead = S.lang === 'hi' ? '' : '<b>' + r.dev + '</b>';
-      return '<li>' + lead + reasonText(kind, r) + extra + '</li>';
+      return '<li>' + reasonText(kind, r) + extra + '</li>';
     }).join('');
     $(pre + '-next').textContent = nextLine(kind, verdict, v, days);
   }
@@ -1021,15 +1033,26 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
 
   function renderStrip(days) {
     const view = days.slice(1, 8);
-    $('strip').innerHTML = view.map(d => {
-      const dw = d.rise.toLocaleDateString(S.lang === 'hi' ? 'hi-IN' : 'en-US', { weekday: 'short', timeZone: S.tz });
-      const dt = d.rise.toLocaleDateString('en-US', { day: 'numeric', timeZone: S.tz });
-      return '<div class="cell"><div class="dw">' + dw + '</div><div class="dt">' + dt + '</div>' +
-        '<div class="dots">' +
-        '<span class="dot ' + (d.water ? 'ok' : 'no') + '" title="jala">' + (d.water ? DOT_OK : DOT_NO) + '</span>' +
-        '<span class="dot ' + (d.pluck ? 'ok' : 'no') + '" title="patra">' + (d.pluck ? DOT_OK : DOT_NO) + '</span>' +
-        '</div><div class="sp">' + (d.special || '&nbsp;') + '</div></div>';
-    }).join('');
+    const loc = S.lang === 'hi' ? 'hi-IN' : 'en-US';
+    const DROP = '<svg width="11" height="13" viewBox="0 0 12 14" aria-hidden="true"><path d="M6 1 C6 1 1.5 7 1.5 9.6 A4.5 4.5 0 0 0 10.5 9.6 C10.5 7 6 1 6 1 Z" fill="currentColor"/></svg>';
+    const LEAF = '<svg width="11" height="13" viewBox="0 0 12 14" aria-hidden="true"><path d="M6 13 C6 9 6 5 6 2 M6 2 C3 3.2 1.6 5.8 2.2 8.4 C2.8 10.7 4.3 12.2 6 13 C7.7 12.2 9.2 10.7 9.8 8.4 C10.4 5.8 9 3.2 6 2 Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+    const dot = ok => '<span class="dot ' + (ok ? 'ok' : 'no') + '">' + (ok ? DOT_OK : DOT_NO) + '</span>';
+    let h = '<span></span>';
+    for (const d of view) {
+      h += '<div class="s-day"><span class="dw">' + d.rise.toLocaleDateString(loc, { weekday: 'short', timeZone: S.tz }) +
+        '</span><span class="dt">' + d.rise.toLocaleDateString('en-US', { day: 'numeric', timeZone: S.tz }) + '</span></div>';
+    }
+    h += '<span class="s-lab">' + DROP + t('jala') + '</span>';
+    for (const d of view) h += dot(d.water);
+    h += '<span class="s-lab">' + LEAF + t('patra') + '</span>';
+    for (const d of view) h += dot(d.pluck);
+    h += '<span></span>';
+    for (const d of view) {
+      const sk = d.specialKeys && d.specialKeys[0];
+      const name = sk ? t('sk_' + sk) : (S.lang === 'hi' ? P.tithiLabel(d.udaya).dev : P.tithiLabel(d.udaya).en);
+      h += '<span class="s-tithi' + (sk ? ' sp' : '') + '">' + name + '</span>';
+    }
+    $('strip').innerHTML = h;
   }
 
   // ---------- settings UI ----------
@@ -1048,16 +1071,18 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
   ];
   function buildToggles(hostId, defs) {
     $(hostId).innerHTML = defs.map(([key, dev, en]) =>
-      '<label class="toggle"><span class="lbl"><b>' + dev + '</b>' + en + '</span>' +
+      '<label class="toggle"><span class="lbl">' + (S.lang === 'hi' ? '<b>' + dev + '</b>' : en) + '</span>' +
       '<input type="checkbox" data-key="' + key + '"' + (S[key] ? ' checked' : '') + '><span class="tr"></span></label>'
     ).join('');
-    $(hostId).addEventListener('change', e => {
-      const k = e.target.dataset.key;
-      if (k) { S[k] = e.target.checked; save(); render(); }
-    });
   }
-  buildToggles('tgl-water', WATER_TGL);
-  buildToggles('tgl-pluck', PLUCK_TGL);
+  function rebuildToggles() { buildToggles('tgl-water', WATER_TGL); buildToggles('tgl-pluck', PLUCK_TGL); }
+  rebuildToggles();
+  function onToggleChange(e) {
+    const k = e.target.dataset.key;
+    if (k) { S[k] = e.target.checked; save(); render(); }
+  }
+  $('tgl-water').addEventListener('change', onToggleChange);
+  $('tgl-pluck').addEventListener('change', onToggleChange);
 
   $('loc-preset').value = S.preset || 'custom';
   $('loc-lat').value = S.lat; $('loc-lon').value = S.lon;
@@ -1123,7 +1148,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
   $('btn-gps').addEventListener('click', geoLocate);
   $('b-city').addEventListener('click', function () { confirmLoc(); openSheet('sheet-settings'); });
   $('b-ok').addEventListener('click', confirmLoc);
-  $('btn-lang').addEventListener('click', function () { S.lang = S.lang === 'hi' ? 'en' : 'hi'; save(); render(); updateBanner(); });
+  $('btn-lang').addEventListener('click', function () { S.lang = S.lang === 'hi' ? 'en' : 'hi'; save(); rebuildToggles(); render(); updateBanner(); });
   $('btn-share').addEventListener('click', function () {
     const url = location.href.split('#')[0];
     const text = t('shareText') + url;
@@ -1140,6 +1165,15 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
   render();
   updateBanner();
   if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {} }
+  // Aggregate visit counting (GoatCounter): fill in the site code to activate. Runs only on the public site.
+  const GOATCOUNTER = '';
+  if (GOATCOUNTER && location.hostname.indexOf('github.io') >= 0) {
+    const gs = document.createElement('script');
+    gs.async = true;
+    gs.setAttribute('data-goatcounter', 'https://' + GOATCOUNTER + '.goatcounter.com/count');
+    gs.src = 'https://gc.zgo.at/count.js';
+    document.body.appendChild(gs);
+  }
   setInterval(render, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
 })();
