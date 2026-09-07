@@ -170,6 +170,8 @@
   .sheet .gps { font: inherit; background: var(--ok-field); color: var(--ok-ink); border: none; border-radius: 999px; padding: 6px 13px; cursor: pointer; }
   .horizon { color: var(--no-glyph); }
   .err { display: none; background: var(--no-soft); color: var(--no-field); border-radius: 10px; padding: 10px 14px; }
+  .err button, .sheet .reset-btn { font: inherit; font-size: 13px; background: transparent; color: var(--no-field); border: 1px solid var(--no-field); border-radius: 999px; padding: 5px 13px; cursor: pointer; margin-left: 4px; }
+  .err button:hover, .sheet .reset-btn:hover { background: var(--no-field); color: var(--no-ink); }
   @media (pointer: coarse) {
     .foot button { padding: 9px 16px; }
     .banner button { padding: 8px 14px; }
@@ -198,7 +200,7 @@
           <circle cx="12" cy="2.4" r="0.9"/>
         </g>
       </svg>
-      <span class="name">तुलसी सेवा</span>
+      <span class="name" lang="sa">तुलसी सेवा</span>
     </div>
     <div class="clock">
       <div class="time" id="clock">–:–</div>
@@ -206,7 +208,7 @@
     </div>
   </header>
 
-  <div class="err" id="err">The calculation engine failed to load. Reload the page once online; after the first load it runs fully offline.</div>
+  <div class="err" id="err">The pañcāṅga could not be computed with the current settings. If this persists, reset and start again. <button id="btn-reset-err" type="button">Reset settings</button></div>
 
   <section class="panchang">
     <span class="orn" aria-hidden="true"><svg width="38" height="11" viewBox="0 0 38 11"><path d="M19 1.2 L23 5.5 L19 9.8 L15 5.5 Z" fill="currentColor"/><circle cx="8" cy="5.5" r="1.4" fill="currentColor"/><circle cx="30" cy="5.5" r="1.4" fill="currentColor"/></svg></span>
@@ -229,7 +231,7 @@
           <circle cx="50" cy="50" r="44"></circle>
           <path id="glyph-water" d=""></path>
         </svg>
-        <div class="v-words"><div class="dev" id="w-dev"></div><div class="en" id="w-en"></div></div>
+        <div class="v-words"><div class="dev" id="w-dev" lang="sa"></div><div class="en" id="w-en"></div></div>
       </div>
       <ul class="reasons" id="w-reasons" hidden></ul>
       <div class="v-next" id="w-next"></div>
@@ -242,7 +244,7 @@
           <circle cx="50" cy="50" r="44"></circle>
           <path id="glyph-pluck" d=""></path>
         </svg>
-        <div class="v-words"><div class="dev" id="k-dev"></div><div class="en" id="k-en"></div></div>
+        <div class="v-words"><div class="dev" id="k-dev" lang="sa"></div><div class="en" id="k-en"></div></div>
       </div>
       <ul class="reasons" id="k-reasons" hidden></ul>
       <div class="v-next" id="k-next"></div>
@@ -292,12 +294,13 @@
   </div>
   <p id="tz-note"></p>
   <h4>Theme</h4>
-  <div class="loc-row">
+  <div class="loc-row" id="theme-row">
     <select id="theme-sel">
       <option value="auto">Auto, follows the sun</option>
       <option value="day">Always day</option>
       <option value="night">Always night</option>
     </select>
+    <button id="btn-reset" type="button" class="reset-btn">Reset all settings</button>
   </div>
 </aside>
 
@@ -664,11 +667,19 @@ function createPanchang(A) {
   for (const g of GRAHANA) g.sutakHrs = g.type === 'sūrya' ? 12 : 9;
   const HORIZON = Date.UTC(2029, 11, 31);
 
-  function regionOf(s) { return s.lon > 30 ? 'IN' : s.lon < -30 ? 'NA' : 'BOTH'; }
+  // Eclipse visibility is regional. Claim coverage only where the table actually
+  // applies; anywhere else return NONE so the UI says so instead of implying
+  // that another continent's eclipses are visible locally.
+  function regionOf(s) {
+    if (s.lat >= 15 && s.lat <= 75 && s.lon >= -170 && s.lon <= -50) return 'NA';
+    if (s.lat >= 5 && s.lat <= 40 && s.lon >= 60 && s.lon <= 100) return 'IN';
+    return 'NONE';
+  }
   function grahanaAt(s, now) {
     const reg = regionOf(s), t = now.getTime();
+    if (reg === 'NONE') return null;
     for (const g of GRAHANA) {
-      if (reg !== 'BOTH' && !g.regions.includes(reg)) continue;
+      if (!g.regions.includes(reg)) continue;
       const sutak = g.start - g.sutakHrs * 3600000;
       if (t >= sutak && t <= g.end) return { ...g, sutakStart: new Date(sutak), inSutak: t < g.start };
     }
@@ -685,6 +696,7 @@ function createPanchang(A) {
     }
     const nextRise = riseAfter(s, new Date(r.getTime() + 60000));
     const sunset = setAfter(s, r);
+    if (!nextRise || !sunset) throw new Error('no complete sunrise-to-sunrise cycle at this latitude');
     return { rise: r, nextRise, sunset };
   }
 
@@ -710,10 +722,15 @@ function createPanchang(A) {
 
   // Tithis that are current at any point of the daylight window [rise, set].
   function daylightTithis(s, rise, set) {
-    const t1 = tithiAt(rise);
-    const out = [t1];
-    const e1 = tithiEndAfter(rise);
-    if (e1 && set && e1.getTime() < set.getTime()) out.push(t1 % 30 + 1);
+    const out = [tithiAt(rise)];
+    if (!set) return out;
+    let t = rise;
+    for (let i = 0; i < 3; i++) {
+      const e = tithiEndAfter(t);
+      if (!e || e.getTime() >= set.getTime()) break;
+      t = new Date(e.getTime() + 60000);
+      out.push(tithiAt(t));
+    }
     return out;
   }
 
@@ -813,6 +830,7 @@ function createPanchang(A) {
     let prevU = tithiAt(pr && pr.getTime() < od.rise.getTime() ? pr : new Date(od.rise.getTime() - 86400000));
     let rise = od.rise, nextRise = od.nextRise;
     for (let i = 0; i < n; i++) {
+      if (!rise || !nextRise) break;
       const day = dayInfo(s, rise, nextRise, prevU);
       const set = setAfter(s, rise);
       const dts = daylightTithis(s, rise, set);
@@ -927,9 +945,23 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
   }
   let S = { ...P.DEFAULTS, preset: 'calgary', lang: 'en', locConfirmed: false };
   let hadSaved = false;
+  // Corrupt or hand-edited storage must never brick the page: anything that fails
+  // validation is ignored, and a reset control is always reachable.
+  function validSettings(o) {
+    if (!o || typeof o !== 'object') return false;
+    if (typeof o.lat !== 'number' || !isFinite(o.lat) || Math.abs(o.lat) > 66) return false;
+    if (typeof o.lon !== 'number' || !isFinite(o.lon) || Math.abs(o.lon) > 180) return false;
+    if (typeof o.tz !== 'string' || !o.tz) return false;
+    try { new Intl.DateTimeFormat('en-US', { timeZone: o.tz }).format(new Date()); } catch (e) { return false; }
+    return true;
+  }
+  function resetAll() {
+    try { localStorage.removeItem('tulsi.settings.v1'); localStorage.removeItem('tulsi.reload'); } catch (e) {}
+    location.reload();
+  }
   try {
     const saved = JSON.parse(localStorage.getItem('tulsi.settings.v1') || 'null');
-    if (saved && typeof saved === 'object') {
+    if (validSettings(saved)) {
       hadSaved = true;
       if (saved.locConfirmed === undefined) saved.locConfirmed = true; /* pre-v2 installs */
       S = { ...S, ...saved };
@@ -957,6 +989,15 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
 
   // ---------- render ----------
   let lastEval = null;
+  let lastKey = null;
+  function rulesSig() { return WATER_TGL.concat(PLUCK_TGL).map(d => (S[d[0]] ? 1 : 0)).join(''); }
+  function setThemeColor(mode) {
+    try {
+      let m = document.querySelector('meta[name="theme-color"]:not([media])');
+      if (!m) { m = document.createElement('meta'); m.setAttribute('name', 'theme-color'); document.head.appendChild(m); }
+      m.setAttribute('content', mode === 'dark' ? '#0B110C' : '#F3F5EA');
+    } catch (e) {}
+  }
   function render() {
     const now = new Date();
     let v;
@@ -971,16 +1012,28 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
         if (localStorage.getItem('tulsi.reload') !== k) { localStorage.setItem('tulsi.reload', k); location.reload(); return; }
       }
     } catch (e) { /* storage or reload unavailable */ }
+    // Cheap tick: the clock and date refresh every minute.
+    $('clock').innerHTML = fmtT(now).replace(/(am|pm)$/, '<span>$1</span>');
+    $('place').textContent = S.place + ' · ' + fmtD(now);
+
+    // Everything below is recomputed only when something meaningful actually
+    // changed. This keeps a pinned old phone from running the full ephemeris
+    // sweep every tick, and stops the aria-live cards re-announcing identical
+    // text to screen readers around the clock.
+    const key = [S.lang, S.theme, S.place, S.tz, rulesSig(), v.od.rise.getTime(),
+      v.live.tithi, v.night, v.water.ok, v.pluck.ok,
+      v.water.reasons.map(r => r.key).join(','),
+      v.pluck.reasons.map(r => r.key).join(',')].join('|');
+    if (key === lastKey) return;
+    lastKey = key;
     const days = P.outlook(S, now, 9);
 
     // theme
     const mode = S.theme === 'day' ? 'light' : S.theme === 'night' ? 'dark' : (v.night ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', mode);
+    setThemeColor(mode);
 
-    // header
-    $('clock').innerHTML = fmtT(now).replace(/(am|pm)$/, '<span>$1</span>');
     $('suntimes').innerHTML = '<b>udaya</b> ' + fmtT(v.od.rise) + ' · <b>asta</b> ' + fmtT(v.od.sunset);
-    $('place').textContent = S.place + ' · ' + fmtD(now);
 
     // panchang line, in the selected language only
     const L = v.live.label;
@@ -1012,7 +1065,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
     renderStrip(days);
     renderGrahana();
     $('horizon').hidden = Date.now() <= P.HORIZON;
-    $('tz-note').textContent = 'Sunrise, sunset, vāra and every displayed time follow this place and its timezone (' + S.tz + '). The device clock timezone does not matter.';
+    $('tz-note').textContent = 'Sunrise, sunset, vāra and every displayed time follow this place and the timezone ' + S.tz + '. City presets carry their own timezone; a custom location uses this device timezone, so keep the device zone matching the place.';
     document.documentElement.lang = S.lang === 'hi' ? 'hi' : 'en';
     $('w-title').textContent = t('titleWater'); $('k-title').textContent = t('titlePluck');
     $('btn-settings').textContent = t('btnNiyama'); $('btn-about').textContent = t('btnAbout');
@@ -1141,16 +1194,19 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
   $('loc-lon').addEventListener('change', customLoc);
   $('theme-sel').value = S.theme;
   $('theme-sel').addEventListener('change', e => { S.theme = e.target.value; save(); render(); });
+  $('btn-reset').addEventListener('click', resetAll);
+  $('btn-reset-err').addEventListener('click', resetAll);
 
   // grahana table (re-rendered on tz/location change)
   function renderGrahana() {
     const reg = P.regionOf(S);
-    const list = P.GRAHANA.filter(g => reg === 'BOTH' || g.regions.includes(reg));
-    const nowMs = Date.now();
-    const nxt = list.find(g => g.end > nowMs);
-    $('gr-note').textContent = nxt
-      ? 'Next grahaṇa for ' + S.place + ': ' + new Date(nxt.start).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: S.tz }) + '.'
-      : 'No upcoming grahaṇa in the table for this location.';
+    const nowT = Date.now();
+    const list = reg === 'NONE' ? [] : P.GRAHANA.filter(g => g.regions.includes(reg) && g.end > nowT);
+    $('gr-note').textContent = reg === 'NONE'
+      ? 'Grahaṇa data does not yet cover ' + S.place + '. Every other calculation is correct here; please check eclipses against a local source.'
+      : (list.length
+        ? 'Next grahaṇa for ' + S.place + ': ' + new Date(list[0].start).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: S.tz }) + '.'
+        : 'No further grahaṇa for ' + S.place + ' in the table.');
     $('gr-body').innerHTML = list.map(g => {
       const st = new Date(g.start);
       const dt = st.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: S.tz });
@@ -1218,7 +1274,9 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
     gs.src = 'https://gc.zgo.at/count.js';
     document.body.appendChild(gs);
   }
-  setInterval(render, 30000);
+  (function tick() {
+    setTimeout(function () { render(); tick(); }, 60000 - (Date.now() % 60000) + 60);
+  })();
   document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
 })();
 </script>
