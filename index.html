@@ -119,7 +119,6 @@
   .outlook h2 { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); font-weight: 600; margin: 0 0 8px; }
   .strip { display: flex; gap: clamp(3px, 1vw, 8px); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px clamp(8px, 2vw, 14px); }
   .s-cell { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 2px; border-radius: 10px; }
-  .s-cell.today { background: var(--wash); }
   .s-cell .dw { font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
   .s-cell .dt { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: -2px; }
   .dot { width: 19px; height: 19px; border-radius: 50%; display: grid; place-items: center; }
@@ -890,7 +889,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       banner: 'Showing pañcāṅga for {p}, guessed from your clock. Set your exact place, since verdicts depend on local sunrise.',
       bannerNoGuess: 'Set your location, since verdicts depend on local sunrise.',
       yourLoc: 'Your location', till: 'till',
-      titleWater: 'Jala · Watering', titlePluck: 'Patra · Plucking', btnNiyama: '⚙ Niyama', btnAbout: 'About', legWater: 'water', legPluck: 'pluck', legToday: 'today',
+      titleWater: 'Jala · Watering', titlePluck: 'Patra · Plucking', btnNiyama: '⚙ Niyama', btnAbout: 'About', legWater: 'water', legPluck: 'pluck',
       sk_ekadashi: 'Ekādaśī', sk_sankranti: 'Saṅkrānti', sk_purnima: 'Pūrṇimā', sk_amavasya: 'Amāvasyā', sk_dvadashi: 'Dvādaśī',
       shareText: 'Tulasī Sevā, should you water or pluck tulasī today? Live śāstra verdict, free: ' },
     hi: { waterYes: 'आज जल चढ़ाएँ', waterNo: 'आज जल न चढ़ाएँ', waterNoNight: 'रात्रि में जल नहीं',
@@ -903,7 +902,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       banner: 'आपकी घड़ी से {p} माना गया है। सटीक स्थान चुनें, निर्णय स्थानीय सूर्योदय पर निर्भर हैं।',
       bannerNoGuess: 'अपना स्थान चुनें, निर्णय स्थानीय सूर्योदय पर निर्भर हैं।',
       yourLoc: 'आपका स्थान', till: 'तक',
-      titleWater: 'जलम् · जल-अर्पण', titlePluck: 'पत्रम् · पत्र-चयन', btnNiyama: '⚙ नियम', btnAbout: 'विवरण', legWater: 'जल', legPluck: 'पत्र', legToday: 'आज',
+      titleWater: 'जलम् · जल-अर्पण', titlePluck: 'पत्रम् · पत्र-चयन', btnNiyama: '⚙ नियम', btnAbout: 'विवरण', legWater: 'जल', legPluck: 'पत्र',
       sk_ekadashi: 'एकादशी', sk_sankranti: 'सङ्क्रान्ति', sk_purnima: 'पूर्णिमा', sk_amavasya: 'अमावस्या', sk_dvadashi: 'द्वादशी',
       shareText: 'तुलसी सेवा, आज तुलसी को जल चढ़ाएँ या नहीं? देखें: ' }
   };
@@ -967,7 +966,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
     // Daily self-refresh at 4 am local (place time): pinned devices pick up new versions and stay drift-free.
     try {
       const hr = parseInt(now.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false, timeZone: S.tz }), 10);
-      if (hr === 4) {
+      if (hr === 4 && location.hostname.indexOf('claude.ai') < 0) {
         const k = dayKey(now);
         if (localStorage.getItem('tulsi.reload') !== k) { localStorage.setItem('tulsi.reload', k); location.reload(); return; }
       }
@@ -1072,7 +1071,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
   function renderStrip(days) {
     const view = days.slice(1, 8);
     const loc = S.lang === 'hi' ? 'hi-IN' : 'en-US';
-    const dot = ok => '<span class="dot ' + (ok ? 'ok' : 'no') + '">' + (ok ? DOT_OK : DOT_NO) + '</span>';
+    const dot = (ok, kind) => '<span class="dot ' + (ok ? 'ok' : 'no') + '" role="img" aria-label="' + kind + ': ' + (ok ? okWord() : noWord()) + '">' + (ok ? DOT_OK : DOT_NO) + '</span>';
     let h = '';
     for (const d of view) {
       const sk = d.specialKeys && d.specialKeys[0];
@@ -1080,7 +1079,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       h += '<div class="s-cell">' +
         '<span class="dw">' + d.rise.toLocaleDateString(loc, { weekday: 'short', timeZone: S.tz }) + '</span>' +
         '<span class="dt">' + d.rise.toLocaleDateString('en-US', { day: 'numeric', timeZone: S.tz }) + '</span>' +
-        dot(d.water) + dot(d.pluck) +
+        dot(d.water, t('legWater')) + dot(d.pluck, t('legPluck')) +
         '<span class="s-tithi' + (sk ? ' sp' : '') + '">' + name + '</span></div>';
     }
     $('strip').innerHTML = h;
