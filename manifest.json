@@ -1,0 +1,13 @@
+{
+  "name": "Tulas\u012b Sev\u0101",
+  "short_name": "Tulas\u012b Sev\u0101",
+  "description": "Should you water tulsi today? Live shastra verdict.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0B110C",
+  "theme_color": "#23703F",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
