@@ -117,18 +117,22 @@
 
   /* outlook */
   .outlook h2 { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); font-weight: 600; margin: 0 0 8px; }
-  .strip { display: grid; grid-template-columns: auto repeat(7, 1fr); gap: 6px 6px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
-  .s-day { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-  .s-day .dw { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-  .s-day .dt { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .s-lab { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--muted); padding-right: 2px; }
-  .s-lab svg { flex: 0 0 auto; }
-  .dot { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; justify-self: center; }
+  .strip { display: flex; gap: clamp(3px, 1vw, 8px); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px clamp(8px, 2vw, 14px); }
+  .s-cell { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 2px; border-radius: 10px; }
+  .s-cell.today { background: var(--wash); }
+  .s-cell .dw { font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .s-cell .dt { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: -2px; }
+  .dot { width: 19px; height: 19px; border-radius: 50%; display: grid; place-items: center; }
   .dot svg { display: block; }
   .dot.ok { background: var(--ok-soft); color: var(--ok-glyph); }
   .dot.no { background: var(--no-soft); color: var(--no-glyph); }
-  .s-tithi { text-align: center; font-size: 8.5px; color: var(--faint); line-height: 1.15; overflow: hidden; overflow-wrap: anywhere; max-height: 20px; min-width: 0; }
+  .s-tithi { text-align: center; font-size: 9px; color: var(--faint); line-height: 1.12; overflow-wrap: anywhere; hyphens: auto; margin-top: 1px; }
   .s-tithi.sp { color: var(--gold); font-weight: 600; }
+  .legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend .k { width: 15px; height: 15px; border-radius: 50%; display: grid; place-items: center; }
+  .legend .k.ok { background: var(--ok-soft); color: var(--ok-glyph); }
+  .legend .k.no { background: var(--no-soft); color: var(--no-glyph); }
 
   /* footer */
   .foot { margin-top: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; color: var(--faint); font-size: 12.5px; padding-top: 4px; }
@@ -249,6 +253,7 @@
   <section class="outlook">
     <h2 id="outlook-h2">Next seven days</h2>
     <div class="strip" id="strip"></div>
+    <div class="legend" id="strip-legend"></div>
   </section>
 
   <footer class="foot">
@@ -885,7 +890,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       banner: 'Showing pañcāṅga for {p}, guessed from your clock. Set your exact place, since verdicts depend on local sunrise.',
       bannerNoGuess: 'Set your location, since verdicts depend on local sunrise.',
       yourLoc: 'Your location', till: 'till',
-      titleWater: 'Jala · Watering', titlePluck: 'Patra · Plucking', btnNiyama: '⚙ Niyama', btnAbout: 'About',
+      titleWater: 'Jala · Watering', titlePluck: 'Patra · Plucking', btnNiyama: '⚙ Niyama', btnAbout: 'About', legWater: 'water', legPluck: 'pluck', legToday: 'today',
       sk_ekadashi: 'Ekādaśī', sk_sankranti: 'Saṅkrānti', sk_purnima: 'Pūrṇimā', sk_amavasya: 'Amāvasyā', sk_dvadashi: 'Dvādaśī',
       shareText: 'Tulasī Sevā, should you water or pluck tulasī today? Live śāstra verdict, free: ' },
     hi: { waterYes: 'आज जल चढ़ाएँ', waterNo: 'आज जल न चढ़ाएँ', waterNoNight: 'रात्रि में जल नहीं',
@@ -898,7 +903,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       banner: 'आपकी घड़ी से {p} माना गया है। सटीक स्थान चुनें, निर्णय स्थानीय सूर्योदय पर निर्भर हैं।',
       bannerNoGuess: 'अपना स्थान चुनें, निर्णय स्थानीय सूर्योदय पर निर्भर हैं।',
       yourLoc: 'आपका स्थान', till: 'तक',
-      titleWater: 'जलम् · जल-अर्पण', titlePluck: 'पत्रम् · पत्र-चयन', btnNiyama: '⚙ नियम', btnAbout: 'विवरण',
+      titleWater: 'जलम् · जल-अर्पण', titlePluck: 'पत्रम् · पत्र-चयन', btnNiyama: '⚙ नियम', btnAbout: 'विवरण', legWater: 'जल', legPluck: 'पत्र', legToday: 'आज',
       sk_ekadashi: 'एकादशी', sk_sankranti: 'सङ्क्रान्ति', sk_purnima: 'पूर्णिमा', sk_amavasya: 'अमावस्या', sk_dvadashi: 'द्वादशी',
       shareText: 'तुलसी सेवा, आज तुलसी को जल चढ़ाएँ या नहीं? देखें: ' }
   };
@@ -1067,26 +1072,26 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
   function renderStrip(days) {
     const view = days.slice(1, 8);
     const loc = S.lang === 'hi' ? 'hi-IN' : 'en-US';
-    const DROP = '<svg width="11" height="13" viewBox="0 0 12 14" aria-hidden="true"><path d="M6 1 C6 1 1.5 7 1.5 9.6 A4.5 4.5 0 0 0 10.5 9.6 C10.5 7 6 1 6 1 Z" fill="currentColor"/></svg>';
-    const LEAF = '<svg width="11" height="13" viewBox="0 0 12 14" aria-hidden="true"><path d="M6 13 C6 9 6 5 6 2 M6 2 C3 3.2 1.6 5.8 2.2 8.4 C2.8 10.7 4.3 12.2 6 13 C7.7 12.2 9.2 10.7 9.8 8.4 C10.4 5.8 9 3.2 6 2 Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
     const dot = ok => '<span class="dot ' + (ok ? 'ok' : 'no') + '">' + (ok ? DOT_OK : DOT_NO) + '</span>';
-    let h = '<span></span>';
-    for (const d of view) {
-      h += '<div class="s-day"><span class="dw">' + d.rise.toLocaleDateString(loc, { weekday: 'short', timeZone: S.tz }) +
-        '</span><span class="dt">' + d.rise.toLocaleDateString('en-US', { day: 'numeric', timeZone: S.tz }) + '</span></div>';
-    }
-    h += '<span class="s-lab">' + DROP + t('jala') + '</span>';
-    for (const d of view) h += dot(d.water);
-    h += '<span class="s-lab">' + LEAF + t('patra') + '</span>';
-    for (const d of view) h += dot(d.pluck);
-    h += '<span></span>';
+    let h = '';
     for (const d of view) {
       const sk = d.specialKeys && d.specialKeys[0];
       const name = sk ? t('sk_' + sk) : (S.lang === 'hi' ? P.tithiLabel(d.udaya).dev : P.tithiLabel(d.udaya).en);
-      h += '<span class="s-tithi' + (sk ? ' sp' : '') + '">' + name + '</span>';
+      h += '<div class="s-cell">' +
+        '<span class="dw">' + d.rise.toLocaleDateString(loc, { weekday: 'short', timeZone: S.tz }) + '</span>' +
+        '<span class="dt">' + d.rise.toLocaleDateString('en-US', { day: 'numeric', timeZone: S.tz }) + '</span>' +
+        dot(d.water) + dot(d.pluck) +
+        '<span class="s-tithi' + (sk ? ' sp' : '') + '">' + name + '</span></div>';
     }
     $('strip').innerHTML = h;
+    $('strip-legend').innerHTML =
+      '<span><span class="k ok">' + DOT_OK + '</span>' + t('legWater') + ' / ' + t('legPluck') + ' ' + okWord() + '</span>' +
+      '<span><span class="k no">' + DOT_NO + '</span>' + t('legWater') + ' / ' + t('legPluck') + ' ' + noWord() + '</span>' +
+      '<span>' + rowsNote() + '</span>';
   }
+  function okWord() { return S.lang === 'hi' ? 'ठीक' : 'ok'; }
+  function noWord() { return S.lang === 'hi' ? 'वर्जित' : 'no'; }
+  function rowsNote() { return S.lang === 'hi' ? 'ऊपर ' + t('jala') + ', नीचे ' + t('patra') : 'top ' + t('jala') + ', bottom ' + t('patra'); }
 
   // ---------- settings UI ----------
   const WATER_TGL = [
