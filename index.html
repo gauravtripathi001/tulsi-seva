@@ -86,6 +86,7 @@
   .panchang .dev { font-family: var(--serif); font-size: clamp(22px, 5.2vmin, 34px); line-height: 1.3; text-wrap: balance; }
   .panchang .iast { color: var(--muted); font-size: clamp(13px, 2.6vmin, 15.5px); margin-top: 3px; }
   .panchang .iast b { font-weight: 500; color: var(--ink); }
+  .predawn { margin-top: 9px; font-size: 12.5px; line-height: 1.35; color: var(--gold); border-left: 2px solid var(--gold); padding-left: 9px; }
 
   /* first-run location banner */
   .banner { border: 1px dashed var(--gold); background: var(--panel); border-radius: 12px; padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13.5px; color: var(--muted); }
@@ -214,6 +215,7 @@
     <span class="orn" aria-hidden="true"><svg width="38" height="11" viewBox="0 0 38 11"><path d="M19 1.2 L23 5.5 L19 9.8 L15 5.5 Z" fill="currentColor"/><circle cx="8" cy="5.5" r="1.4" fill="currentColor"/><circle cx="30" cy="5.5" r="1.4" fill="currentColor"/></svg></span>
     <div class="dev" id="p-dev">…</div>
     <div class="iast" id="p-iast">computing…</div>
+    <div class="predawn" id="predawn" hidden></div>
   </section>
 
   <div class="banner" id="loc-banner" hidden>
@@ -318,7 +320,7 @@
   <p><b>Accuracy.</b> Tithi end-times cross-checked against published pañcāṅgas (Sep 2026 – Mar 2027 sample) agree within about a minute; saṅkrānti instants within ~10 minutes. Good for daily seva, for vrata-critical timing, confirm with your pañcāṅga of record.</p>
   <p><b>Keep it by your tulasī.</b> On a phone or tablet: open this page → browser menu → "Add to Home Screen", it opens full-screen like an app and keeps working offline after the first load. For an always-on display, an old phone on a charger with the screen kept awake works beautifully.</p>
   <p><b>Coverage note:</b> tithi, vāra, sunrise and saṅkrānti compute correctly anywhere on Earth. The grahaṇa data currently covers the North-American and Indian skies; for other regions, verify eclipses locally.</p>
-  <p class="credit">Made with care by Gaurav Tripathi in Calgary · astronomy by astronomy-engine (MIT) · free, no ads, no tracking. Tulasyai namaḥ.</p>
+  <p class="credit">A free sevā, offered without ads or tracking. Astronomy by astronomy-engine (MIT). Tulasyai namaḥ.</p>
   <!-- support-section (activate by uncommenting once daksina links exist):
   <p class="credit">If this seva serves your home, a daksina keeps it free for everyone: UPI __UPI__ · ko-fi.com/__HANDLE__</p>
   -->
@@ -595,7 +597,7 @@ function createPanchang(A) {
 
   // ---------- settings ----------
   const DEFAULTS = {
-    lat: 51.0447, lon: -114.0719, place: 'Calgary', tz: 'America/Edmonton',
+    lat: 28.6139, lon: 77.2090, place: 'Delhi', tz: 'Asia/Kolkata',
     // water rules
     waterEkadashi: true, waterSunday: true, waterDvadashi: false, waterNight: true, waterGrahana: true,
     // pluck rules
@@ -908,6 +910,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       bannerNoGuess: 'Set your location, since verdicts depend on local sunrise.',
       yourLoc: 'Your location', till: 'till',
       titleWater: 'Jala · Watering', titlePluck: 'Patra · Plucking', btnNiyama: '⚙ Niyama', btnAbout: 'About', legWater: 'water', legPluck: 'pluck',
+      preDawn: 'Before sunrise, so it is still {v}. Today\u2019s verdicts begin at sunrise {t}, because the day turns at sunrise, not at midnight.',
       sk_ekadashi: 'Ekādaśī', sk_sankranti: 'Saṅkrānti', sk_purnima: 'Pūrṇimā', sk_amavasya: 'Amāvasyā', sk_dvadashi: 'Dvādaśī',
       shareText: 'Tulasī Sevā, should you water or pluck tulasī today? Live śāstra verdict, free: ' },
     hi: { waterYes: 'आज जल चढ़ाएँ', waterNo: 'आज जल न चढ़ाएँ', waterNoNight: 'रात्रि में जल नहीं',
@@ -921,6 +924,7 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
       bannerNoGuess: 'अपना स्थान चुनें, निर्णय स्थानीय सूर्योदय पर निर्भर हैं।',
       yourLoc: 'आपका स्थान', till: 'तक',
       titleWater: 'जलम् · जल-अर्पण', titlePluck: 'पत्रम् · पत्र-चयन', btnNiyama: '⚙ नियम', btnAbout: 'विवरण', legWater: 'जल', legPluck: 'पत्र',
+      preDawn: 'सूर्योदय से पूर्व, अतः अभी {v} ही चल रहा है। आज के निर्णय सूर्योदय {t} से आरम्भ होंगे, क्योंकि दिन सूर्योदय पर बदलता है, मध्यरात्रि पर नहीं।',
       sk_ekadashi: 'एकादशी', sk_sankranti: 'सङ्क्रान्ति', sk_purnima: 'पूर्णिमा', sk_amavasya: 'अमावस्या', sk_dvadashi: 'द्वादशी',
       shareText: 'तुलसी सेवा, आज तुलसी को जल चढ़ाएँ या नहीं? देखें: ' }
   };
@@ -1020,8 +1024,12 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
     // changed. This keeps a pinned old phone from running the full ephemeris
     // sweep every tick, and stops the aria-live cards re-announcing identical
     // text to screen readers around the clock.
+    // Between civil midnight and the next sunrise the Hindu day has not rolled
+    // over yet. Without this the date visibly changes while the verdicts do not,
+    // which reads as a stuck screen.
+    const preDawn = dayKey(now) !== dayKey(v.od.rise);
     const key = [S.lang, S.theme, S.place, S.tz, rulesSig(), v.od.rise.getTime(),
-      v.live.tithi, v.night, v.water.ok, v.pluck.ok,
+      v.live.tithi, v.night, v.water.ok, v.pluck.ok, preDawn,
       v.water.reasons.map(r => r.key).join(','),
       v.pluck.reasons.map(r => r.key).join(',')].join('|');
     if (key === lastKey) return;
@@ -1049,6 +1057,12 @@ if (typeof module !== 'undefined') module.exports = { createPanchang };
     }
     $('p-dev').textContent = main;
     $('p-iast').textContent = sub;
+    $('predawn').hidden = !preDawn;
+    if (preDawn) {
+      $('predawn').textContent = t('preDawn')
+        .replace('{v}', S.lang === 'hi' ? v.vara.dev : v.vara.en)
+        .replace('{t}', fmtT(v.od.nextRise));
+    }
 
     renderCard('water', v.water, {
       okDev: 'जलं देयम्', okEn: t('waterYes'), noDev: 'जलं न देयम्',
